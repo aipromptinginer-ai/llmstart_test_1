@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  llm-bot:
+    build: .
+    container_name: llm-learning-goals-bot
+    restart: unless-stopped
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - PRIMARY_MODEL=${PRIMARY_MODEL:-google/gemini-flash-1.5}
+      - FALLBACK_MODEL=${FALLBACK_MODEL:-meta-llama/llama-3.2-3b-instruct:free}
+      - TEMPERATURE=${TEMPERATURE:-0.7}
+      - MAX_TOKENS=${MAX_TOKENS:-1500}
+      - TOP_P=${TOP_P:-0.9}
+      - RETRY_ATTEMPTS=${RETRY_ATTEMPTS:-3}
+      - MAX_MESSAGE_LENGTH=${MAX_MESSAGE_LENGTH:-1000}
+      - MEMORY_TTL_HOURS=${MEMORY_TTL_HOURS:-24}
+      - MAX_HISTORY_SIZE=${MAX_HISTORY_SIZE:-10}
+      - CLEANUP_INTERVAL_HOURS=${CLEANUP_INTERVAL_HOURS:-6}
+      - ENABLE_METRICS=${ENABLE_METRICS:-true}
+      - METRICS_CLEANUP_HOURS=${METRICS_CLEANUP_HOURS:-24}
+      - LOG_HOURLY_STATS=${LOG_HOURLY_STATS:-true}
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - llm-bot-network
+
+networks:
+  llm-bot-network:
+    driver: bridge
