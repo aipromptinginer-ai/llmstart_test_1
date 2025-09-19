@@ -1,4 +1,4 @@
-# Используем официальный Python образ
+# Упрощенный Dockerfile для Railway
 FROM python:3.11-slim
 
 # Устанавливаем рабочую директорию
@@ -11,13 +11,12 @@ RUN apt-get update && apt-get install -y \
 
 # Копируем файлы конфигурации
 COPY pyproject.toml ./
-COPY uv.lock ./
 
 # Устанавливаем uv
 RUN pip install uv
 
-# Устанавливаем зависимости
-RUN uv sync --frozen
+# Устанавливаем зависимости (без --frozen)
+RUN uv sync
 
 # Копируем исходный код
 COPY src/ ./src/

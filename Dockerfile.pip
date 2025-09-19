@@ -1,4 +1,4 @@
-# Используем официальный Python образ
+# Самый простой Dockerfile для Railway (использует pip)
 FROM python:3.11-slim
 
 # Устанавливаем рабочую директорию
@@ -11,13 +11,12 @@ RUN apt-get update && apt-get install -y \
 
 # Копируем файлы конфигурации
 COPY pyproject.toml ./
-COPY uv.lock ./
 
-# Устанавливаем uv
-RUN pip install uv
-
-# Устанавливаем зависимости
-RUN uv sync --frozen
+# Устанавливаем зависимости через pip
+RUN pip install --no-cache-dir \
+    aiogram>=3.13.0 \
+    openai>=1.51.0 \
+    python-dotenv>=1.0.1
 
 # Копируем исходный код
 COPY src/ ./src/
@@ -32,4 +31,4 @@ ENV PYTHONPATH=/app/src
 ENV PYTHONUNBUFFERED=1
 
 # Команда запуска
-CMD ["uv", "run", "python", "src/main.py"]
+CMD ["python", "src/main.py"]
