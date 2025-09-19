@@ -8,7 +8,7 @@ services:
     environment:
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
-      - PRIMARY_MODEL=${PRIMARY_MODEL:-meta-llama/llama-3.1-8b-instruct:free}
+      - PRIMARY_MODEL=${PRIMARY_MODEL:-meta-llama/llama-3.2-3b-instruct:free}
       - FALLBACK_MODEL=${FALLBACK_MODEL:-meta-llama/llama-3.2-3b-instruct:free}
       - TEMPERATURE=${TEMPERATURE:-0.7}
       - MAX_TOKENS=${MAX_TOKENS:-1500}

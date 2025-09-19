@@ -184,14 +184,14 @@ Config = {
 
 ### Конфигурация LLM
 - **Провайдер**: OpenRouter API
-- **Основная модель**: `meta-llama/llama-3.1-8b-instruct:free` (бесплатная)
+- **Основная модель**: `meta-llama/llama-3.2-3b-instruct:free` (бесплатная)
 - **Резервная модель**: `meta-llama/llama-3.2-3b-instruct:free` (бесплатная)
 - **Формат**: OpenAI-совместимый API через OpenRouter
 
 ### Настраиваемые параметры
 ```python
 LLM_Config = {
-    "PRIMARY_MODEL": str,       # meta-llama/llama-3.1-8b-instruct:free
+    "PRIMARY_MODEL": str,       # meta-llama/llama-3.2-3b-instruct:free
     "FALLBACK_MODEL": str,      # meta-llama/llama-3.2-3b-instruct:free
     "TEMPERATURE": float,       # 0.7 (по умолчанию, настраиваемо)
     "MAX_TOKENS": int,          # 1500 (по умолчанию, настраиваемо)
@@ -206,7 +206,7 @@ LLM_Config = {
 3. **Новое сообщение пользователя**
 
 ### Логика переключения моделей
-- **Основная модель**: первая попытка на `meta-llama/llama-3.1-8b-instruct:free`
+- **Основная модель**: первая попытка на `meta-llama/llama-3.2-3b-instruct:free`
 - **Retry с основной**: 2 дополнительные попытки на основной модели
 - **Fallback**: при исчерпании попыток переключение на резервную модель
 - **Финальная ошибка**: если резервная модель тоже недоступна
