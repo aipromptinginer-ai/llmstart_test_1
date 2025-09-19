@@ -184,14 +184,14 @@ Config = {
 
 ### Конфигурация LLM
 - **Провайдер**: OpenRouter API
-- **Основная модель**: `google/gemini-flash-1.5` (бесплатная)
+- **Основная модель**: `openai/gpt-4o-mini` (бесплатная)
 - **Резервная модель**: `meta-llama/llama-3.2-3b-instruct:free` (бесплатная)
 - **Формат**: OpenAI-совместимый API через OpenRouter
 
 ### Настраиваемые параметры
 ```python
 LLM_Config = {
-    "PRIMARY_MODEL": str,       # google/gemini-flash-1.5
+    "PRIMARY_MODEL": str,       # openai/gpt-4o-mini
     "FALLBACK_MODEL": str,      # meta-llama/llama-3.2-3b-instruct:free
     "TEMPERATURE": float,       # 0.7 (по умолчанию, настраиваемо)
     "MAX_TOKENS": int,          # 1500 (по умолчанию, настраиваемо)
@@ -206,7 +206,7 @@ LLM_Config = {
 3. **Новое сообщение пользователя**
 
 ### Логика переключения моделей
-- **Основная модель**: первая попытка на `google/gemini-flash-1.5`
+- **Основная модель**: первая попытка на `openai/gpt-4o-mini`
 - **Retry с основной**: 2 дополнительные попытки на основной модели
 - **Fallback**: при исчерпании попыток переключение на резервную модель
 - **Финальная ошибка**: если резервная модель тоже недоступна
