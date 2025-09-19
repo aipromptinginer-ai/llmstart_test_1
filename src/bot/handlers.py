@@ -4,9 +4,10 @@ from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
 
-from llm.client import create_llm_client, generate_response, LLMError
+from llm.client import create_llm_client, generate_response_with_history, LLMError
 from llm.prompts import load_system_prompt
 from config.settings import Config
+from memory.storage import get_user_session, add_message, get_user_history, start_cleanup_task
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -26,7 +27,14 @@ async def init_llm(app_config: Config) -> None:
     llm_client = await create_llm_client(config.openrouter_api_key)
     system_prompt = load_system_prompt()
     
-    logger.info("LLM client initialized successfully")
+    # Запуск фоновой задачи очистки памяти
+    import asyncio
+    asyncio.create_task(start_cleanup_task(
+        cleanup_interval_hours=config.cleanup_interval_hours,
+        ttl_hours=config.memory_ttl_hours
+    ))
+    
+    logger.info("LLM client and memory cleanup task initialized successfully")
 
 
 @router.message(Command("start"))
@@ -34,6 +42,9 @@ async def handle_start(message: Message) -> None:
     """Обработчик команды /start."""
     user_name = message.from_user.first_name or "друг"
     user_id = message.from_user.id
+    
+    # Создание/получение сессии для сохранения в памяти
+    session = get_user_session(user_id, user_name)
     
     welcome_text = f"""Добро пожаловать, {user_name}! 👋
 
@@ -51,14 +62,22 @@ async def handle_start(message: Message) -> None:
 
 Для получения примеров используйте команду /help"""
     
+    # Сохранение команды и ответа в историю диалога
+    add_message(user_id, "user", "/start", config.max_history_size)
+    add_message(user_id, "assistant", welcome_text, config.max_history_size)
+    
     await message.answer(welcome_text)
-    logger.info(f"Команда /start от пользователя {user_id}")
+    logger.info(f"Команда /start от пользователя {user_id}, сохранена в историю")
 
 
 @router.message(Command("help"))
 async def handle_help(message: Message) -> None:
     """Обработчик команды /help."""
     user_id = message.from_user.id
+    user_name = message.from_user.first_name or "пользователь"
+    
+    # Создание/получение сессии для сохранения в памяти
+    session = get_user_session(user_id, user_name)
     
     help_text = """📖 Примеры вопросов:
 
@@ -74,15 +93,20 @@ async def handle_help(message: Message) -> None:
 • Желаемый уровень по Блуму
 • Продолжительность обучения"""
     
+    # Сохранение команды и ответа в историю диалога
+    add_message(user_id, "user", "/help", config.max_history_size)
+    add_message(user_id, "assistant", help_text, config.max_history_size)
+    
     await message.answer(help_text)
-    logger.info(f"Команда /help от пользователя {user_id}")
+    logger.info(f"Команда /help от пользователя {user_id}, сохранена в историю")
 
 
 @router.message()
 async def handle_message(message: Message) -> None:
-    """Обработчик текстовых сообщений с LLM."""
+    """Обработчик текстовых сообщений с LLM и памятью диалога."""
     user_text = message.text
     user_id = message.from_user.id
+    user_name = message.from_user.first_name or "пользователь"
     
     logger.info(f"Сообщение от пользователя {user_id}, длина: {len(user_text)}")
     
@@ -99,13 +123,23 @@ async def handle_message(message: Message) -> None:
         return
     
     try:
-        # Генерация ответа через LLM
-        logger.info(f"Generating LLM response for user {user_id}")
+        # Получение/создание сессии пользователя
+        session = get_user_session(user_id, user_name)
         
-        response = await generate_response(
+        # Получение истории диалога для LLM
+        history = get_user_history(user_id)
+        
+        # Добавление пользовательского сообщения в историю
+        add_message(user_id, "user", user_text, config.max_history_size)
+        
+        # Генерация ответа с учетом истории
+        logger.info(f"Generating LLM response with history for user {user_id} ({len(history)} messages)")
+        
+        response = await generate_response_with_history(
             client=llm_client,
             system_prompt=system_prompt,
             user_message=user_text,
+            message_history=history,
             primary_model=config.primary_model,
             fallback_model=config.fallback_model,
             retry_attempts=config.retry_attempts,
@@ -114,8 +148,11 @@ async def handle_message(message: Message) -> None:
             top_p=config.top_p
         )
         
+        # Добавление ответа ассистента в историю
+        add_message(user_id, "assistant", response, config.max_history_size)
+        
         await message.answer(response)
-        logger.info(f"LLM response sent to user {user_id}")
+        logger.info(f"LLM response with history sent to user {user_id}")
         
     except LLMError as e:
         logger.error(f"LLM error for user {user_id}: {e}")

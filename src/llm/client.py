@@ -63,11 +63,51 @@ async def generate_response(
     retry_attempts: int = 3,
     **llm_params
 ) -> str:
-    """Генерация ответа с retry-логикой и fallback."""
+    """Генерация ответа с retry-логикой и fallback (без истории)."""
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": user_message}
     ]
+    
+    # Попытки с основной моделью
+    for attempt in range(retry_attempts):
+        try:
+            return await send_request(client, messages, primary_model, **llm_params)
+        except LLMError as e:
+            logger.warning(f"Primary model attempt {attempt + 1} failed: {e}")
+            if attempt < retry_attempts - 1:
+                await asyncio.sleep(1.0 * (attempt + 1))  # Exponential backoff
+    
+    # Fallback на резервную модель
+    logger.warning(f"Switching to fallback model: {fallback_model}")
+    try:
+        return await send_request(client, messages, fallback_model, **llm_params)
+    except LLMError as e:
+        logger.error(f"Fallback model failed: {e}")
+        raise LLMError("Все модели LLM недоступны. Попробуйте позже.")
+
+
+async def generate_response_with_history(
+    client: AsyncOpenAI,
+    system_prompt: str,
+    user_message: str,
+    message_history: List[Dict[str, str]],
+    primary_model: str,
+    fallback_model: str,
+    retry_attempts: int = 3,
+    **llm_params
+) -> str:
+    """Генерация ответа с учетом истории диалога."""
+    # Формирование полного контекста
+    messages = [{"role": "system", "content": system_prompt}]
+    
+    # Добавление истории диалога
+    messages.extend(message_history)
+    
+    # Добавление нового сообщения пользователя
+    messages.append({"role": "user", "content": user_message})
+    
+    logger.debug(f"Generating response with {len(message_history)} history messages")
     
     # Попытки с основной моделью
     for attempt in range(retry_attempts):
