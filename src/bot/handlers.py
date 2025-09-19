@@ -1,5 +1,6 @@
 """Обработчики сообщений Telegram бота."""
 import logging
+import asyncio
 from aiogram import Router
 from aiogram.types import Message
 from aiogram.filters import Command
@@ -8,6 +9,7 @@ from llm.client import create_llm_client, generate_response_with_history, LLMErr
 from llm.prompts import load_system_prompt
 from config.settings import Config
 from memory.storage import get_user_session, add_message, get_user_history, start_cleanup_task
+from monitoring.metrics import metrics_collector
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -34,7 +36,21 @@ async def init_llm(app_config: Config) -> None:
         ttl_hours=config.memory_ttl_hours
     ))
     
+    # Запуск периодического логирования статистики
+    if config.log_hourly_stats:
+        asyncio.create_task(start_hourly_stats_logging())
+    
     logger.info("LLM client and memory cleanup task initialized successfully")
+
+
+async def start_hourly_stats_logging() -> None:
+    """Запуск периодического логирования статистики каждый час."""
+    while True:
+        try:
+            await asyncio.sleep(3600)  # Ждем час
+            metrics_collector.log_hourly_stats()
+        except Exception as e:
+            logger.error(f"Error in hourly stats logging: {e}")
 
 
 @router.message(Command("start"))
@@ -119,6 +135,7 @@ async def handle_message(message: Message) -> None:
     # Проверка длины сообщения
     if len(user_text) > config.max_message_length:
         logger.warning(f"Message too long from user {user_id}: {len(user_text)} chars")
+        metrics_collector.record_message(user_id, len(user_text), processed=False)
         await message.answer(f"Сообщение слишком длинное. Максимум {config.max_message_length} символов.")
         return
     
@@ -151,14 +168,19 @@ async def handle_message(message: Message) -> None:
         # Добавление ответа ассистента в историю
         add_message(user_id, "assistant", response, config.max_history_size)
         
+        # Запись метрики успешного сообщения
+        metrics_collector.record_message(user_id, len(user_text), processed=True)
+        
         await message.answer(response)
         logger.info(f"LLM response with history sent to user {user_id}")
         
     except LLMError as e:
         logger.error(f"LLM error for user {user_id}: {e}")
+        metrics_collector.record_message(user_id, len(user_text), processed=False)
         error_message = "Извините, сервис временно недоступен. Попробуйте повторить запрос через несколько минут."
         await message.answer(error_message)
         
     except Exception as e:
         logger.error(f"Unexpected error for user {user_id}: {e}")
+        metrics_collector.record_message(user_id, len(user_text), processed=False)
         await message.answer("Произошла внутренняя ошибка. Пожалуйста, попробуйте позже.")

@@ -8,6 +8,7 @@ from aiogram.enums import ParseMode
 
 from config.settings import load_config
 from bot.handlers import router, init_llm
+from bot.middleware import ErrorHandlingMiddleware, MetricsMiddleware
 
 
 async def main() -> None:
@@ -45,8 +46,13 @@ async def main() -> None:
         await init_llm(config)
         logger.info("LLM initialized successfully")
         
-        # Настройка диспетчера
+        # Настройка диспетчера с middleware
         dp = Dispatcher()
+        
+        # Добавление middleware для обработки ошибок и метрик
+        dp.message.middleware(ErrorHandlingMiddleware())
+        dp.message.middleware(MetricsMiddleware())
+        
         dp.include_router(router)
         
         logger.info("Starting bot polling...")

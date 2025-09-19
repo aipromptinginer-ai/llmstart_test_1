@@ -22,6 +22,9 @@ class Config:
     memory_ttl_hours: int = 24
     max_history_size: int = 10
     cleanup_interval_hours: int = 6
+    enable_metrics: bool = True
+    metrics_cleanup_hours: int = 24
+    log_hourly_stats: bool = True
 
 
 def load_config() -> Config:
@@ -41,7 +44,10 @@ def load_config() -> Config:
         max_message_length=int(os.getenv("MAX_MESSAGE_LENGTH", "1000")),
         memory_ttl_hours=int(os.getenv("MEMORY_TTL_HOURS", "24")),
         max_history_size=int(os.getenv("MAX_HISTORY_SIZE", "10")),
-        cleanup_interval_hours=int(os.getenv("CLEANUP_INTERVAL_HOURS", "6"))
+        cleanup_interval_hours=int(os.getenv("CLEANUP_INTERVAL_HOURS", "6")),
+        enable_metrics=os.getenv("ENABLE_METRICS", "true").lower() == "true",
+        metrics_cleanup_hours=int(os.getenv("METRICS_CLEANUP_HOURS", "24")),
+        log_hourly_stats=os.getenv("LOG_HOURLY_STATS", "true").lower() == "true"
     )
     
     validate_config(config)
@@ -76,5 +82,7 @@ def validate_config(config: Config) -> None:
         raise ValueError(f"MAX_HISTORY_SIZE должен быть > 0, получено: {config.max_history_size}")
     if config.cleanup_interval_hours <= 0:
         raise ValueError(f"CLEANUP_INTERVAL_HOURS должен быть > 0, получено: {config.cleanup_interval_hours}")
+    if config.metrics_cleanup_hours <= 0:
+        raise ValueError(f"METRICS_CLEANUP_HOURS должен быть > 0, получено: {config.metrics_cleanup_hours}")
     
     logger.info("Configuration validation completed successfully")
