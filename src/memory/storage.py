@@ -116,6 +116,16 @@ async def start_cleanup_task(cleanup_interval_hours: int = 6, ttl_hours: int = 2
             logger.error(f"Cleanup task error: {e}")
 
 
+def clear_user_history(user_id: int) -> None:
+    """Очистка истории диалога пользователя."""
+    if user_id in user_sessions:
+        user_sessions[user_id]["history"] = []
+        user_sessions[user_id]["last_activity"] = datetime.now()
+        logger.info(f"Cleared history for user {user_id}")
+    else:
+        logger.warning(f"Session not found for user {user_id} during clear")
+
+
 def get_session_stats() -> Dict[str, int]:
     """Статистика сессий для мониторинга."""
     return {

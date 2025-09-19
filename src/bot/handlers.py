@@ -8,7 +8,7 @@ from aiogram.filters import Command
 from llm.client import create_llm_client, generate_response_with_history, LLMError
 from llm.prompts import load_system_prompt
 from config.settings import Config
-from memory.storage import get_user_session, add_message, get_user_history, start_cleanup_task
+from memory.storage import get_user_session, add_message, get_user_history, start_cleanup_task, clear_user_history
 from monitoring.metrics import metrics_collector
 
 logger = logging.getLogger(__name__)
@@ -57,6 +57,9 @@ async def handle_start(message: Message) -> None:
     """Обработчик команды /start."""
     user_name = message.from_user.first_name or "друг"
     user_id = message.from_user.id
+    
+    # Очистка истории диалога при /start
+    clear_user_history(user_id)
     
     # Создание/получение сессии для сохранения в памяти
     session = get_user_session(user_id, user_name)
