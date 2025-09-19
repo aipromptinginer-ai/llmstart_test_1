@@ -7,7 +7,7 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 
 from config.settings import load_config
-from bot.handlers import router
+from bot.handlers import router, init_llm
 
 
 async def main() -> None:
@@ -39,6 +39,11 @@ async def main() -> None:
         except Exception as e:
             logger.error(f"Failed to connect to Telegram API: {e}")
             raise ValueError("Недействительный TELEGRAM_BOT_TOKEN или проблемы с подключением к Telegram API")
+        
+        # Инициализация LLM
+        logger.info("Initializing LLM...")
+        await init_llm(config)
+        logger.info("LLM initialized successfully")
         
         # Настройка диспетчера
         dp = Dispatcher()
