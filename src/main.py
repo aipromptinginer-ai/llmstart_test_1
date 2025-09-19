@@ -9,6 +9,7 @@ from aiogram.enums import ParseMode
 from config.settings import load_config
 from bot.handlers import router, init_llm
 from bot.middleware import ErrorHandlingMiddleware, MetricsMiddleware
+from healthcheck import start_healthcheck_server
 
 
 async def main() -> None:
@@ -46,6 +47,11 @@ async def main() -> None:
         await init_llm(config)
         logger.info("LLM initialized successfully")
         
+        # Запуск healthcheck сервера
+        logger.info("Starting healthcheck server...")
+        healthcheck_runner = await start_healthcheck_server()
+        logger.info("Healthcheck server started")
+        
         # Настройка диспетчера с middleware
         dp = Dispatcher()
         
@@ -65,6 +71,10 @@ async def main() -> None:
         # Закрытие сессии бота
         if 'bot' in locals():
             await bot.session.close()
+        
+        # Остановка healthcheck сервера
+        if 'healthcheck_runner' in locals():
+            await healthcheck_runner.cleanup()
 
 
 if __name__ == "__main__":
