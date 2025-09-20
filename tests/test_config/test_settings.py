@@ -17,7 +17,7 @@ class TestConfig:
         
         assert config.telegram_bot_token == "test_token"
         assert config.openrouter_api_key == "test_key"
-        assert config.primary_model == "google/gemini-flash-1.5"
+        assert config.primary_model == "qwen/qwen-2.5-72b-instruct:free"
         assert config.max_message_length == 1000
         assert config.enable_metrics is True
     
@@ -157,7 +157,7 @@ class TestLoadConfig:
         """Тест что используются значения по умолчанию для неопределенных переменных."""
         config = load_config()
         
-        assert config.primary_model == "google/gemini-flash-1.5"
+        assert config.primary_model == "qwen/qwen-2.5-72b-instruct:free"
         assert config.temperature == 0.7
         assert config.max_tokens == 1500
         assert config.enable_metrics is True

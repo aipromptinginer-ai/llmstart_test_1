@@ -63,8 +63,8 @@ else
     railway variables set OPENROUTER_API_KEY="$OPENROUTER_API_KEY"
     
     # Опциональные переменные
-    railway variables set PRIMARY_MODEL="google/gemini-flash-1.5"
-    railway variables set FALLBACK_MODEL="meta-llama/llama-3.2-3b-instruct:free"
+    railway variables set PRIMARY_MODEL="qwen/qwen-2.5-72b-instruct:free"
+    railway variables set FALLBACK_MODEL="deepseek/deepseek-chat-v3.1:free"
     railway variables set TEMPERATURE="0.7"
     railway variables set MAX_TOKENS="1500"
     railway variables set MAX_MESSAGE_LENGTH="1000"

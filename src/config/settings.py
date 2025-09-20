@@ -12,8 +12,8 @@ class Config:
     """Конфигурация приложения."""
     telegram_bot_token: str
     openrouter_api_key: str
-    primary_model: str = "deepseek/deepseek-chat-v3.1:free"
-    fallback_model: str = "meta-llama/llama-3.2-3b-instruct:free"
+    primary_model: str = "qwen/qwen-2.5-72b-instruct:free"
+    fallback_model: str = "deepseek/deepseek-chat-v3.1:free"
     temperature: float = 0.7
     max_tokens: int = 1500
     top_p: float = 0.9
@@ -35,8 +35,8 @@ def load_config() -> Config:
     config = Config(
         telegram_bot_token=os.getenv("TELEGRAM_BOT_TOKEN", ""),
         openrouter_api_key=os.getenv("OPENROUTER_API_KEY", ""),
-        primary_model=os.getenv("PRIMARY_MODEL", "deepseek/deepseek-chat-v3.1:free"),
-        fallback_model=os.getenv("FALLBACK_MODEL", "meta-llama/llama-3.2-3b-instruct:free"),
+        primary_model=os.getenv("PRIMARY_MODEL", "qwen/qwen-2.5-72b-instruct:free"),
+        fallback_model=os.getenv("FALLBACK_MODEL", "deepseek/deepseek-chat-v3.1:free"),
         temperature=float(os.getenv("TEMPERATURE", "0.7")),
         max_tokens=int(os.getenv("MAX_TOKENS", "1500")),
         top_p=float(os.getenv("TOP_P", "0.9")),

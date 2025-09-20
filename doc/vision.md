@@ -184,15 +184,15 @@ Config = {
 
 ### Конфигурация LLM
 - **Провайдер**: OpenRouter API
-- **Основная модель**: `deepseek/deepseek-chat-v3.1:free` (бесплатная)
-- **Резервная модель**: `meta-llama/llama-3.2-3b-instruct:free` (бесплатная)
+- **Основная модель**: `qwen/qwen-2.5-72b-instruct:free` (бесплатная)
+- **Резервная модель**: `deepseek/deepseek-chat-v3.1:free` (бесплатная)
 - **Формат**: OpenAI-совместимый API через OpenRouter
 
 ### Настраиваемые параметры
 ```python
 LLM_Config = {
-    "PRIMARY_MODEL": str,       # deepseek/deepseek-chat-v3.1:free
-    "FALLBACK_MODEL": str,      # meta-llama/llama-3.2-3b-instruct:free
+    "PRIMARY_MODEL": str,       # qwen/qwen-2.5-72b-instruct:free
+    "FALLBACK_MODEL": str,      # deepseek/deepseek-chat-v3.1:free
     "TEMPERATURE": float,       # 0.7 (по умолчанию, настраиваемо)
     "MAX_TOKENS": int,          # 1500 (по умолчанию, настраиваемо)
     "TOP_P": float,            # 0.9 (по умолчанию, настраиваемо)
@@ -206,7 +206,7 @@ LLM_Config = {
 3. **Новое сообщение пользователя**
 
 ### Логика переключения моделей
-- **Основная модель**: первая попытка на `deepseek/deepseek-chat-v3.1:free`
+- **Основная модель**: первая попытка на `qwen/qwen-2.5-72b-instruct:free`
 - **Retry с основной**: 2 дополнительные попытки на основной модели
 - **Fallback**: при исчерпании попыток переключение на резервную модель
 - **Финальная ошибка**: если резервная модель тоже недоступна
@@ -426,8 +426,8 @@ OPENROUTER_API_KEY=your_openrouter_key     # Обязательно
 #### Настраиваемые (со значениями по умолчанию)
 ```env
 # LLM модели
-PRIMARY_MODEL=google/gemini-flash-1.5                    # default
-FALLBACK_MODEL=meta-llama/llama-3.2-3b-instruct:free   # default
+PRIMARY_MODEL=qwen/qwen-2.5-72b-instruct:free          # default
+FALLBACK_MODEL=deepseek/deepseek-chat-v3.1:free        # default
 
 # LLM параметры
 TEMPERATURE=0.7          # default (можно изменить 0.0-2.0)

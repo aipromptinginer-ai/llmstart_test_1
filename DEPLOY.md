@@ -47,8 +47,8 @@ TELEGRAM_BOT_TOKEN=ваш_telegram_bot_token
 OPENROUTER_API_KEY=ваш_openrouter_api_key
 
 # Опциональные (можно оставить по умолчанию)
-PRIMARY_MODEL=google/gemini-flash-1.5
-FALLBACK_MODEL=meta-llama/llama-3.2-3b-instruct:free
+PRIMARY_MODEL=qwen/qwen-2.5-72b-instruct:free
+FALLBACK_MODEL=deepseek/deepseek-chat-v3.1:free
 TEMPERATURE=0.7
 MAX_TOKENS=1500
 TOP_P=0.9
